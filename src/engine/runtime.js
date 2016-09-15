@@ -5,6 +5,7 @@ var util = require('util');
 
 // Virtual I/O devices.
 var Clock = require('../io/clock');
+var Keyboard = require('../io/keyboard');
 var Mouse = require('../io/mouse');
 
 var defaultBlockPackages = {
@@ -18,9 +19,8 @@ var defaultBlockPackages = {
 
 /**
  * Manages targets, scripts, and the sequencer.
- * @param {!Array.<Target>} targets List of targets for this runtime.
  */
-function Runtime (targets) {
+function Runtime () {
     // Bind event emitter
     EventEmitter.call(this);
 
@@ -28,8 +28,9 @@ function Runtime (targets) {
 
     /**
      * Target management and storage.
+     * @type {Array.<!Target>}
      */
-    this.targets = targets;
+    this.targets = [];
 
     /**
      * A list of threads that are currently running in the VM.
@@ -47,34 +48,40 @@ function Runtime (targets) {
      * @type {Object.<string, Function>}
      */
     this._primitives = {};
+    this._hats = {};
+    this._edgeActivatedHatValues = {};
     this._registerBlockPackages();
 
     this.ioDevices = {
         'clock': new Clock(),
+        'keyboard': new Keyboard(this),
         'mouse': new Mouse()
     };
+
+    this._scriptGlowsPreviousFrame = [];
+    this._editingTarget = null;
 }
 
 /**
- * Event name for glowing a stack
+ * Event name for glowing a script.
  * @const {string}
  */
-Runtime.STACK_GLOW_ON = 'STACK_GLOW_ON';
+Runtime.SCRIPT_GLOW_ON = 'STACK_GLOW_ON';
 
 /**
- * Event name for unglowing a stack
+ * Event name for unglowing a script.
  * @const {string}
  */
-Runtime.STACK_GLOW_OFF = 'STACK_GLOW_OFF';
+Runtime.SCRIPT_GLOW_OFF = 'STACK_GLOW_OFF';
 
 /**
- * Event name for glowing a block
+ * Event name for glowing a block.
  * @const {string}
  */
 Runtime.BLOCK_GLOW_ON = 'BLOCK_GLOW_ON';
 
 /**
- * Event name for unglowing a block
+ * Event name for unglowing a block.
  * @const {string}
  */
 Runtime.BLOCK_GLOW_OFF = 'BLOCK_GLOW_OFF';
@@ -109,11 +116,23 @@ Runtime.prototype._registerBlockPackages = function () {
         if (defaultBlockPackages.hasOwnProperty(packageName)) {
             // @todo pass a different runtime depending on package privilege?
             var packageObject = new (defaultBlockPackages[packageName])(this);
-            var packageContents = packageObject.getPrimitives();
-            for (var op in packageContents) {
-                if (packageContents.hasOwnProperty(op)) {
-                    this._primitives[op] =
-                        packageContents[op].bind(packageObject);
+            // Collect primitives from package.
+            if (packageObject.getPrimitives) {
+                var packagePrimitives = packageObject.getPrimitives();
+                for (var op in packagePrimitives) {
+                    if (packagePrimitives.hasOwnProperty(op)) {
+                        this._primitives[op] =
+                            packagePrimitives[op].bind(packageObject);
+                    }
+                }
+            }
+            // Collect hat metadata from package.
+            if (packageObject.getHats) {
+                var packageHats = packageObject.getHats();
+                for (var hatName in packageHats) {
+                    if (packageHats.hasOwnProperty(hatName)) {
+                        this._hats[hatName] = packageHats[hatName];
+                    }
                 }
             }
         }
@@ -133,14 +152,56 @@ Runtime.prototype.getOpcodeFunction = function (opcode) {
 // -----------------------------------------------------------------------------
 
 /**
+ * Return whether an opcode represents a hat block.
+ * @param {!string} opcode The opcode to look up.
+ * @return {Boolean} True if the op is known to be a hat.
+ */
+Runtime.prototype.getIsHat = function (opcode) {
+    return this._hats.hasOwnProperty(opcode);
+};
+
+/**
+ * Return whether an opcode represents an edge-activated hat block.
+ * @param {!string} opcode The opcode to look up.
+ * @return {Boolean} True if the op is known to be a edge-activated hat.
+ */
+Runtime.prototype.getIsEdgeActivatedHat = function (opcode) {
+    return this._hats.hasOwnProperty(opcode) &&
+        this._hats[opcode].edgeActivated;
+};
+
+/**
+ * Update an edge-activated hat block value.
+ * @param {!string} blockId ID of hat to store value for.
+ * @param {*} newValue Value to store for edge-activated hat.
+ * @return {*} The old value for the edge-activated hat.
+ */
+Runtime.prototype.updateEdgeActivatedValue = function (blockId, newValue) {
+    var oldValue = this._edgeActivatedHatValues[blockId];
+    this._edgeActivatedHatValues[blockId] = newValue;
+    return oldValue;
+};
+
+/**
+ * Clear all edge-activaed hat values.
+ */
+Runtime.prototype.clearEdgeActivatedValues = function () {
+    this._edgeActivatedHatValues = {};
+};
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+/**
  * Create a thread and push it to the list of threads.
  * @param {!string} id ID of block that starts the stack
+ * @return {!Thread} The newly created thread.
  */
 Runtime.prototype._pushThread = function (id) {
-    this.emit(Runtime.STACK_GLOW_ON, id);
     var thread = new Thread(id);
     thread.pushStack(id);
     this.threads.push(thread);
+    return thread;
 };
 
 /**
@@ -150,9 +211,17 @@ Runtime.prototype._pushThread = function (id) {
 Runtime.prototype._removeThread = function (thread) {
     var i = this.threads.indexOf(thread);
     if (i > -1) {
-        this.emit(Runtime.STACK_GLOW_OFF, thread.topBlock);
         this.threads.splice(i, 1);
     }
+};
+
+/**
+ * Return whether a thread is currently active/running.
+ * @param {?Thread} thread Thread object to check.
+ * @return {Boolean} True if the thread is active/running.
+ */
+Runtime.prototype.isActiveThread = function (thread) {
+    return this.threads.indexOf(thread) > -1;
 };
 
 /**
@@ -172,26 +241,98 @@ Runtime.prototype.toggleScript = function (topBlockId) {
 };
 
 /**
- * Green flag, which stops currently running threads
- * and adds all top-level scripts that start with the green flag
+ * Run a function `f` for all scripts in a workspace.
+ * `f` will be called with two parameters:
+ *  - the top block ID of the script.
+ *  - the target that owns the script.
+ * @param {!Function} f Function to call for each script.
+ * @param {Target=} opt_target Optionally, a target to restrict to.
  */
-Runtime.prototype.greenFlag = function () {
-    // Remove all existing threads
-    for (var i = 0; i < this.threads.length; i++) {
-        this._removeThread(this.threads[i]);
+Runtime.prototype.allScriptsDo = function (f, opt_target) {
+    var targets = this.targets;
+    if (opt_target) {
+        targets = [opt_target];
     }
-    // Add all top scripts with green flag
-    for (var t = 0; t < this.targets.length; t++) {
-        var target = this.targets[t];
+    for (var t = 0; t < targets.length; t++) {
+        var target = targets[t];
         var scripts = target.blocks.getScripts();
         for (var j = 0; j < scripts.length; j++) {
-            var topBlock = scripts[j];
-            if (target.blocks.getBlock(topBlock).opcode ===
-                'event_whenflagclicked') {
-                this._pushThread(scripts[j]);
-            }
+            var topBlockId = scripts[j];
+            f(topBlockId, target);
         }
     }
+};
+
+/**
+ * Start all relevant hats.
+ * @param {!string} requestedHatOpcode Opcode of hats to start.
+ * @param {Object=} opt_matchFields Optionally, fields to match on the hat.
+ * @param {Target=} opt_target Optionally, a target to restrict to.
+ * @return {Array.<Thread>} List of threads started by this function.
+ */
+Runtime.prototype.startHats = function (requestedHatOpcode,
+    opt_matchFields, opt_target) {
+    if (!this._hats.hasOwnProperty(requestedHatOpcode)) {
+        // No known hat with this opcode.
+        return;
+    }
+    var instance = this;
+    var newThreads = [];
+    // Consider all scripts, looking for hats with opcode `requestedHatOpcode`.
+    this.allScriptsDo(function(topBlockId, target) {
+        var potentialHatOpcode = target.blocks.getBlock(topBlockId).opcode;
+        if (potentialHatOpcode !== requestedHatOpcode) {
+            // Not the right hat.
+            return;
+        }
+        // Match any requested fields.
+        // For example: ensures that broadcasts match.
+        // This needs to happen before the block is evaluated
+        // (i.e., before the predicate can be run) because "broadcast and wait"
+        // needs to have a precise collection of started threads.
+        var hatFields = target.blocks.getFields(topBlockId);
+        if (opt_matchFields) {
+            for (var matchField in opt_matchFields) {
+                if (hatFields[matchField].value !==
+                    opt_matchFields[matchField]) {
+                    // Field mismatch.
+                    return;
+                }
+            }
+        }
+        // Look up metadata for the relevant hat.
+        var hatMeta = instance._hats[requestedHatOpcode];
+        if (hatMeta.restartExistingThreads) {
+            // If `restartExistingThreads` is true, we should stop
+            // any existing threads starting with the top block.
+            for (var i = 0; i < instance.threads.length; i++) {
+                if (instance.threads[i].topBlock === topBlockId) {
+                    instance._removeThread(instance.threads[i]);
+                }
+            }
+        } else {
+            // If `restartExistingThreads` is false, we should
+            // give up if any threads with the top block are running.
+            for (var j = 0; j < instance.threads.length; j++) {
+                if (instance.threads[j].topBlock === topBlockId) {
+                    // Some thread is already running.
+                    return;
+                }
+            }
+        }
+        // Start the thread with this top block.
+        newThreads.push(instance._pushThread(topBlockId));
+    }, opt_target);
+    return newThreads;
+};
+
+/**
+ * Start all threads that start with the green flag.
+ */
+Runtime.prototype.greenFlag = function () {
+    this.ioDevices.clock.resetProjectTimer();
+    this.clearEdgeActivatedValues();
+    this.startHats('event_whenflagclicked');
 };
 
 /**
@@ -201,11 +342,6 @@ Runtime.prototype.stopAll = function () {
     var threadsCopy = this.threads.slice();
     while (threadsCopy.length > 0) {
         var poppedThread = threadsCopy.pop();
-        // Unglow any blocks on this thread's stack.
-        for (var i = 0; i < poppedThread.stack.length; i++) {
-            this.glowBlock(poppedThread.stack[i], false);
-        }
-        // Actually remove the thread.
         this._removeThread(poppedThread);
     }
 };
@@ -215,10 +351,61 @@ Runtime.prototype.stopAll = function () {
  * inactive threads after each iteration.
  */
 Runtime.prototype._step = function () {
+    // Find all edge-activated hats, and add them to threads to be evaluated.
+    for (var hatType in this._hats) {
+        var hat = this._hats[hatType];
+        if (hat.edgeActivated) {
+            this.startHats(hatType);
+        }
+    }
     var inactiveThreads = this.sequencer.stepThreads(this.threads);
+    this._updateScriptGlows();
     for (var i = 0; i < inactiveThreads.length; i++) {
         this._removeThread(inactiveThreads[i]);
     }
+};
+
+Runtime.prototype.setEditingTarget = function (editingTarget) {
+    this._scriptGlowsPreviousFrame = [];
+    this._editingTarget = editingTarget;
+    this._updateScriptGlows();
+};
+
+Runtime.prototype._updateScriptGlows = function () {
+    // Set of scripts that request a glow this frame.
+    var requestedGlowsThisFrame = [];
+    // Final set of scripts glowing during this frame.
+    var finalScriptGlows = [];
+    // Find all scripts that should be glowing.
+    for (var i = 0; i < this.threads.length; i++) {
+        var thread = this.threads[i];
+        var target = this.targetForThread(thread);
+        if (thread.requestScriptGlowInFrame && target == this._editingTarget) {
+            var blockForThread = thread.peekStack() || thread.topBlock;
+            var script = target.blocks.getTopLevelScript(blockForThread);
+            requestedGlowsThisFrame.push(script);
+        }
+    }
+    // Compare to previous frame.
+    for (var j = 0; j < this._scriptGlowsPreviousFrame.length; j++) {
+        var previousFrameGlow = this._scriptGlowsPreviousFrame[j];
+        if (requestedGlowsThisFrame.indexOf(previousFrameGlow) < 0) {
+            // Glow turned off.
+            this.glowScript(previousFrameGlow, false);
+        } else {
+            // Still glowing.
+            finalScriptGlows.push(previousFrameGlow);
+        }
+    }
+    for (var k = 0; k < requestedGlowsThisFrame.length; k++) {
+        var currentFrameGlow = requestedGlowsThisFrame[k];
+        if (this._scriptGlowsPreviousFrame.indexOf(currentFrameGlow) < 0) {
+            // Glow turned on.
+            this.glowScript(currentFrameGlow, true);
+            finalScriptGlows.push(currentFrameGlow);
+        }
+    }
+    this._scriptGlowsPreviousFrame = finalScriptGlows;
 };
 
 /**
@@ -231,6 +418,19 @@ Runtime.prototype.glowBlock = function (blockId, isGlowing) {
         this.emit(Runtime.BLOCK_GLOW_ON, blockId);
     } else {
         this.emit(Runtime.BLOCK_GLOW_OFF, blockId);
+    }
+};
+
+/**
+ * Emit feedback for script glowing.
+ * @param {?string} topBlockId ID for the top block to update glow
+ * @param {boolean} isGlowing True to turn on glow; false to turn off.
+ */
+Runtime.prototype.glowScript = function (topBlockId, isGlowing) {
+    if (isGlowing) {
+        this.emit(Runtime.SCRIPT_GLOW_ON, topBlockId);
+    } else {
+        this.emit(Runtime.SCRIPT_GLOW_OFF, topBlockId);
     }
 };
 
@@ -255,6 +455,33 @@ Runtime.prototype.targetForThread = function (thread) {
     for (var t = 0; t < this.targets.length; t++) {
         var target = this.targets[t];
         if (target.blocks.getBlock(thread.topBlock)) {
+            return target;
+        }
+    }
+};
+
+/**
+ * Get a target by its id.
+ * @param {string} targetId Id of target to find.
+ * @return {?Target} The target, if found.
+ */
+Runtime.prototype.getTargetById = function (targetId) {
+    for (var i = 0; i < this.targets.length; i++) {
+        var target = this.targets[i];
+        if (target.id == targetId) {
+            return target;
+        }
+    }
+};
+
+/**
+ * Get a target representing the Scratch stage, if one exists.
+ * @return {?Target} The target, if found.
+ */
+Runtime.prototype.getTargetForStage = function () {
+    for (var i = 0; i < this.targets.length; i++) {
+        var target = this.targets[i];
+        if (target.isStage) {
             return target;
         }
     }

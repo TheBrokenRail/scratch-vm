@@ -28,6 +28,12 @@ function Thread (firstBlock) {
      * @type {number}
      */
     this.status = 0; /* Thread.STATUS_RUNNING */
+
+    /**
+     * Whether the thread requests its script to glow during this frame.
+     * @type {boolean}
+     */
+    this.requestScriptGlowInFrame = false;
 }
 
 /**
@@ -121,6 +127,14 @@ Thread.prototype.pushReportedValue = function (value) {
         parentStackFrame.reported[waitingReporter] = value;
         parentStackFrame.waitingReporter = null;
     }
+};
+
+/**
+ * Whether the current execution of a thread is at the top of the stack.
+ * @return {Boolean} True if execution is at top of the stack.
+ */
+Thread.prototype.atStackTop = function () {
+    return this.peekStack() === this.topBlock;
 };
 
 /**
