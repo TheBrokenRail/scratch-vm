@@ -52,6 +52,9 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         this.RETURN = this.RETURN2;
         this.RETURN2 = null;
     }
+    if (!this.RETURN) {
+        this.RETURN = false;
+    }
     return this.RETURN;
 };
 
