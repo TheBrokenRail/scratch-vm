@@ -1,4 +1,4 @@
-function Scratch3ProcedureBlocks(runtime) {
+proc =function Scratch3ProcedureBlocks(runtime) {
     /**
      * The runtime instantiating this block package.
      * @type {Runtime}
@@ -38,15 +38,16 @@ Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
 };
 
 Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
+    var proc = null;
     if (!util.stackFrame.executed) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
-        util.startProcedure(procedureName);
+        proc = util.startProcedure(procedureName);
     }
-    if (util.stackFrame.REPORT) {
-        return util.stackFrame.REPORT;
-    } else {
+    if (!proc) {
         return false;
+    } else {
+        console.log(proc);
     }
 };
 
