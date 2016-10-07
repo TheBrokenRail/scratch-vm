@@ -85,6 +85,7 @@ Thread.prototype.pushStack = function (blockId) {
             waitingReporter: null, // Name of waiting reporter.
             executionContext: {} // A context passed to block implementations.
         });
+        return this.stackFrames[this.stackFrames.length];
     }
 };
 
