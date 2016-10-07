@@ -66,8 +66,7 @@ Sequencer.prototype.stepThreads = function (threads) {
             if (activeThread.stack.length === 0 &&
                 activeThread.status === Thread.STATUS_DONE) {
                 // Finished with this thread - tell runtime to clean it up.
-                inactiveThreads.push(activeThread);
-            } else {
+                inactiveThreads.push(activeThread);            } else {
                 // Keep this thead in the loop.
                 newThreads.push(activeThread);
             }
@@ -77,7 +76,6 @@ Sequencer.prototype.stepThreads = function (threads) {
     }
     return inactiveThreads;
 };
-
 /**
  * Step the requested thread
  * @param {!Thread} thread Thread object to step
@@ -88,8 +86,7 @@ Sequencer.prototype.startThread = function (thread) {
         // A "null block" - empty branch.
         // Yield for the frame.
         thread.popStack();
-        thread.setStatus(Thread.STATUS_YIELD_FRAME);
-        return;
+        thread.setStatus(Thread.STATUS_YIELD_FRAME);        return;
     }
     // Execute the current block
     execute(this, thread);
@@ -100,11 +97,9 @@ Sequencer.prototype.startThread = function (thread) {
         this.proceedThread(thread);
     }
 };
-
 /**
  * Step a thread into a block's branch.
- * @param {!Thread} thread Thread object to step to branch.
- * @param {Number} branchNum Which branch to step to (i.e., 1, 2).
+ * @param {!Thread} thread Thread object to step to branch. * @param {Number} branchNum Which branch to step to (i.e., 1, 2).
  */
 Sequencer.prototype.stepToBranch = function (thread, branchNum) {
     if (!branchNum) {
@@ -131,7 +126,7 @@ Sequencer.prototype.stepToBranch = function (thread, branchNum) {
  */
 Sequencer.prototype.stepToProcedure = function (thread, procedureName) {
     var definition = thread.target.blocks.getProcedureDefinition(procedureName);
-    return thread.pushStack(definition);
+    thread.pushStack(definition);
 };
 
 /**
