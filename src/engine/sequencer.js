@@ -66,6 +66,7 @@ Sequencer.prototype.stepThreads = function (threads) {
             if (activeThread.stack.length === 0 &&
                 activeThread.status === Thread.STATUS_DONE) {
                 // Finished with this thread - tell runtime to clean it up.
+
                 inactiveThreads.push(activeThread);            } else {
                 // Keep this thead in the loop.
                 newThreads.push(activeThread);
@@ -76,8 +77,7 @@ Sequencer.prototype.stepThreads = function (threads) {
     }
     return inactiveThreads;
 };
-/**
- * Step the requested thread
+/** * Step the requested thread
  * @param {!Thread} thread Thread object to step
  */
 Sequencer.prototype.startThread = function (thread) {
@@ -99,7 +99,8 @@ Sequencer.prototype.startThread = function (thread) {
 };
 /**
  * Step a thread into a block's branch.
- * @param {!Thread} thread Thread object to step to branch. * @param {Number} branchNum Which branch to step to (i.e., 1, 2).
+ * @param {!Thread} thread Thread object to step to branch.
+ * @param {Number} branchNum Which branch to step to (i.e., 1, 2).
  */
 Sequencer.prototype.stepToBranch = function (thread, branchNum) {
     if (!branchNum) {
