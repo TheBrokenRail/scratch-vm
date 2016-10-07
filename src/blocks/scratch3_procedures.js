@@ -1,4 +1,4 @@
-.peekStackFrame()proc =function Scratch3ProcedureBlocks(runtime) {
+function Scratch3ProcedureBlocks(runtime) {
     /**
      * The runtime instantiating this block package.
      * @type {Runtime}
@@ -47,6 +47,7 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
     if (proc.peekStackFrame() == null) {
         return false;
     } else {
+        util.yieldFrame();
         console.log(proc.peekStackFrame());
     }
 };
