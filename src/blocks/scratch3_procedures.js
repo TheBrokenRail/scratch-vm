@@ -45,7 +45,15 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         proc = util.startProcedure(procedureName);
     }
     var procReturn = null;
-    while (proc) {procReturn = proc.executionContent.REPORT; util.yieldFrame();}
+    if (!util.stackFrame.executedInFrame) {
+        util.stackFrame.executedInFrame = true;
+        if (proc) {
+            procReturn = proc.executionContent.REPORT;
+        }
+    } else {
+        util.stackFrame.executedInFrame = false;
+        util.yieldFrame();
+    }
     return procReturn;
 };
 
