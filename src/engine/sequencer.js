@@ -131,7 +131,7 @@ Sequencer.prototype.stepToBranch = function (thread, branchNum) {
  */
 Sequencer.prototype.stepToProcedure = function (thread, procedureName) {
     var definition = thread.target.blocks.getProcedureDefinition(procedureName);
-    thread.pushStack(definition);
+    return thread.pushStack(definition);
 };
 
 /**
