@@ -49,12 +49,13 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         util.stackFrame.executedInFrame = true;
         if (proc) {
             procReturn = proc.executionContent.REPORT;
+        } else {
+            return procReturn;
         }
     } else {
         util.stackFrame.executedInFrame = false;
         util.yieldFrame();
     }
-    return procReturn;
 };
 
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
