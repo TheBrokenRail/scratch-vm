@@ -162,7 +162,8 @@ var execute = function (sequencer, thread) {
             sequencer.stepToBranch(thread, branchNum);
         },
         startProcedure: function (procedureName) {
-            return sequencer.stepToProcedure(thread, procedureName);
+            sequencer.stepToProcedure(thread, procedureName);
+            return thread;
         },
         startHats: function(requestedHat, opt_matchFields, opt_target) {
             return (
