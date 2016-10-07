@@ -43,19 +43,13 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
         proc = util.startProcedure(procedureName);
+        proc.executionContext.REPORT = null;
     }
     var procReturn = null;
-    if (!util.stackFrame.executedInFrame) {
-        util.stackFrame.executedInFrame = true;
-        if (proc) {
-            procReturn = proc.executionContent.REPORT;
-        } else {
-            return procReturn;
-        }
-    } else {
-        util.stackFrame.executedInFrame = false;
-        util.yieldFrame();
+    while (proc) {
+        procReturn = proc.executionContext.REPORT;
     }
+    return procReturn;
 };
 
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
