@@ -61,8 +61,8 @@ Scratch3ProcedureBlocks.prototype.report = function (args, util) {
     var thread = util.getThread();
     var i = 0;
     for (; i < thread.stackFrames.length; i++) {
-        if (thread.stackFrames[i - 1].executionContext.stackFrameNum) {
-            thread.stackFrames[i].executionContext.REPORT = args.VALUE;
+        if (thread.stackFrames[i].executionContext.stackFrameNum) {
+            thread.stackFrames[i + 1].executionContext.REPORT = args.VALUE;
             util.done();
             return;
         }
