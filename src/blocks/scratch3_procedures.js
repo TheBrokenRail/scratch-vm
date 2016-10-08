@@ -49,7 +49,8 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
         util.stackFrame.proc = util.startProcedure(procedureName);
-        util.stackFrame.stackFrameNum = util.stackFrame.proc.stackFrames.length - 1;
+        util.stackFrame.stackFrameNum = 
+            util.stackFrame.proc.stackFrames.length - 1;
         util.yieldFrame();
     } else {
         util.yieldFrame();
@@ -59,7 +60,8 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
     // No-op: execute the blocks.
     var thread = util.getThread();
-    for (i = 0; i < thread.stackFrames.length; i++) {
+    var i = 0;
+    for (; i < thread.stackFrames.length; i++) {
         if (thread.stackFrames[i - 1].executionContext.stackFrameNum) {
             thread.stackFrames[i].executionContext.REPORT = args.VALUE;
             util.done();
