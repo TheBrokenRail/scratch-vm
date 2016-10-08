@@ -117,7 +117,7 @@ var execute = function (sequencer, thread) {
     // Recursively evaluate input blocks.
     for (var inputName in inputs) {
         var input = inputs[inputName];
-,        var inputBlockId = input.block;
+        var inputBlockId = input.block;
         // Is there no value for this input waiting in the stack frame?
         if (typeof currentStackFrame.reported[inputName] === 'undefined') {
             // If there's not, we need to evaluate the block.
