@@ -39,13 +39,18 @@ Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
 };
 
 Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
-    if (!util.stackFrame.executed) {
+    if (util.stackFrame.proc.stackFrames[
+            util.stackFrame.stackFrameNum
+        ].executionContext.REPORT) {
+        return util.stackFrame.proc.stackFrames[
+            util.stackFrame.stackFrameNum
+        ].executionContext.REPORT;
+    } else if (!util.stackFrame.executed) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
         util.stackFrame.proc = util.startProcedure(procedureName);
-    }
-    if (util.stackFrame.proc.peekStackFrame().REPORT) {
-        return util.proc.peekStackFrame().REPORT;
+        util.stackFrame.stackFrameNum = util.stackFrame.proc.stackFrames.length - 1;
+        util.yieldFrame();
     } else {
         util.yieldFrame();
     }
@@ -54,7 +59,13 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
     // No-op: execute the blocks.
     var thread = util.getThread();
-    thread.stackFrames[thread.stackFrames.length - 1].REPORT = args.VALUE;
+    for (i = 0; i < thread.stackFrames.length; i++) {
+        if (thread.stackFrames[i - 1].executionContext.stackFrameNum) {
+            thread.stackFrames[i].executionContext.REPORT = args.VALUE;
+            util.done();
+            return;
+        }
+    }
 };
 
 module.exports = Scratch3ProcedureBlocks;
