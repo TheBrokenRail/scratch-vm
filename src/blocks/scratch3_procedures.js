@@ -19,7 +19,6 @@ Scratch3ProcedureBlocks.prototype.getPrimitives = function() {
         'procedures_report': this.report
     };
 };
-
 Scratch3ProcedureBlocks.prototype.defNoReturn = function () {
     // No-op: execute the blocks.
 };
@@ -39,19 +38,19 @@ Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
 };
 
 Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
-    if (util.stackFrame.proc.stackFrames[
-            util.stackFrame.stackFrameNum
-        ].executionContext.REPORT) {
-        return util.stackFrame.proc.stackFrames[
-            util.stackFrame.stackFrameNum
-        ].executionContext.REPORT;
-    } else if (!util.stackFrame.executed) {
+    if (!util.stackFrame.executed) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
         util.stackFrame.proc = util.startProcedure(procedureName);
         util.stackFrame.stackFrameNum = 
             util.stackFrame.proc.stackFrames.length - 1;
         util.yieldFrame();
+    } else if (util.stackFrame.proc.stackFrames[
+            util.stackFrame.stackFrameNum
+        ].executionContext.REPORT) {
+        return util.stackFrame.proc.stackFrames[
+            util.stackFrame.stackFrameNum
+        ].executionContext.REPORT;
     } else {
         util.yieldFrame();
     }
