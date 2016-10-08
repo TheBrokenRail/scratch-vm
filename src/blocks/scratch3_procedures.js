@@ -38,18 +38,17 @@ Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
 };
 
 Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
-    var proc = null;
     if (!util.stackFrame.executed) {
         var procedureName = args.mutation.name;
         util.stackFrame.executed = true;
-        proc = util.startProcedure(procedureName);
-        proc.executionContext.REPORT = null;
+        util.stackFrame.proc = util.startProcedure(procedureName);
     }
-    var procReturn = null;
-    while (proc) {
-        procReturn = proc.executionContext.REPORT;
+    if (util.stackFrame.proc) {
+        util.stackFrame.procReturn = proc.executionContext.REPORT;
+        util.yieldFrame();
+    } else {
+        return util.stackFrame.procReturn;
     }
-    return procReturn;
 };
 
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
