@@ -106,6 +106,7 @@ var execute = function (sequencer, thread) {
     }
 
     // Generate values for arguments (inputs).
+
     var argValues = {};
 
     // Add all fields on this block to the argValues.
@@ -116,7 +117,7 @@ var execute = function (sequencer, thread) {
     // Recursively evaluate input blocks.
     for (var inputName in inputs) {
         var input = inputs[inputName];
-        var inputBlockId = input.block;
+,        var inputBlockId = input.block;
         // Is there no value for this input waiting in the stack frame?
         if (typeof currentStackFrame.reported[inputName] === 'undefined') {
             // If there's not, we need to evaluate the block.
@@ -176,6 +177,9 @@ var execute = function (sequencer, thread) {
                 var devObject = runtime.ioDevices[device];
                 return devObject[func].call(devObject, args);
             }
+        },
+        getThread: function () {
+            return thread;
         }
     });
 
