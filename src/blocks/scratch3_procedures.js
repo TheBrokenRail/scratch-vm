@@ -7,7 +7,7 @@ function Scratch3ProcedureBlocks(runtime) {
 }
 
 /**
-p * Retrieve the block primitives implemented by this package.
+ * Retrieve the block primitives implemented by this package.
  * @return {Object.<string, Function>} Mapping of opcode to Function.
  */
 Scratch3ProcedureBlocks.prototype.getPrimitives = function() {
@@ -17,7 +17,7 @@ Scratch3ProcedureBlocks.prototype.getPrimitives = function() {
         'procedures_defreturn': this.defReturn,
         'procedures_callreturn': this.callReturn,
         'procedures_report': this.report
-.    };
+    };
 };
 
 Scratch3ProcedureBlocks.prototype.defNoReturn = function () {
