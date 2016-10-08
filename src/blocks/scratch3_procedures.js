@@ -1,4 +1,3 @@
-
 function Scratch3ProcedureBlocks(runtime) {
     /**
      * The runtime instantiating this block package.
@@ -8,7 +7,7 @@ function Scratch3ProcedureBlocks(runtime) {
 }
 
 /**
- * Retrieve the block primitives implemented by this package.
+p * Retrieve the block primitives implemented by this package.
  * @return {Object.<string, Function>} Mapping of opcode to Function.
  */
 Scratch3ProcedureBlocks.prototype.getPrimitives = function() {
@@ -18,7 +17,7 @@ Scratch3ProcedureBlocks.prototype.getPrimitives = function() {
         'procedures_defreturn': this.defReturn,
         'procedures_callreturn': this.callReturn,
         'procedures_report': this.report
-    };
+.    };
 };
 
 Scratch3ProcedureBlocks.prototype.defNoReturn = function () {
@@ -28,6 +27,7 @@ Scratch3ProcedureBlocks.prototype.defNoReturn = function () {
 Scratch3ProcedureBlocks.prototype.defReturn = function (args, util) {
     // No-op: execute the blocks.
     util.stackFrame.REPORT = args.RETURN;
+    util.done();
 };
 
 Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
@@ -44,12 +44,10 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         util.stackFrame.executed = true;
         util.stackFrame.proc = util.startProcedure(procedureName);
     }
-    if (util.stackFrame.proc) {
-        util.stackFrame.procReturn = 
-            util.stackFrame.proc.executionContext.REPORT;
-        util.yieldFrame();
+    if (util.stackFrame.proc.peekStackFrame().REPORT) {
+        return util.proc.peekStackFrame().REPORT;
     } else {
-        return util.stackFrame.procReturn;
+        util.yieldFrame();
     }
 };
 
