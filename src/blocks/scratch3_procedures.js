@@ -1,3 +1,4 @@
+
 function Scratch3ProcedureBlocks(runtime) {
     /**
      * The runtime instantiating this block package.
@@ -53,7 +54,8 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
 
 Scratch3ProcedureBlocks.prototype.report = function (args, util) {
     // No-op: execute the blocks.
-    util.stackFrame.REPORT = args.VALUE;
+    var thread = util.getThread();
+    thread.stackFrames[thread.stackFrames.length - 1].REPORT = args.VALUE;
 };
 
 module.exports = Scratch3ProcedureBlocks;
