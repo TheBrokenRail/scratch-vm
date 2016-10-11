@@ -26,7 +26,6 @@ Scratch3ProcedureBlocks.prototype.defNoReturn = function () {
 Scratch3ProcedureBlocks.prototype.defReturn = function (args, util) {
     // No-op: execute the blocks.
     util.stackFrame.REPORT = args.RETURN;
-    util.done();
 };
 
 Scratch3ProcedureBlocks.prototype.callNoReturn = function (args, util) {
@@ -45,7 +44,8 @@ Scratch3ProcedureBlocks.prototype.callReturn = function (args, util) {
         util.stackFrame.stackFrameNum = 
             util.stackFrame.proc.stackFrames.length - 1;
         util.yieldFrame();
-    } else if (util.stackFrame.proc.stackFrames[
+    }
+    if (util.stackFrame.proc.stackFrames[
             util.stackFrame.stackFrameNum
         ].executionContext.REPORT) {
         return util.stackFrame.proc.stackFrames[
