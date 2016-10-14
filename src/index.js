@@ -257,7 +257,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
         this.oParser.parseFromString(this.toolbox, 'text/xml');
     if (this.editingTarget.isStage) {
         var xml = this.dom.getElementById('xml');
-        xml.removeChild(xml.childNodes[0]);   
+        xml.removeChild(xml.childNodes[0]);
     }
 };
 
