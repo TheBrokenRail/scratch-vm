@@ -191,8 +191,7 @@ VirtualMachine.prototype.attachRenderer = function (renderer) {
  */
 VirtualMachine.prototype.blockListener = function (e) {
     if (this.editingTarget) {
-        this.editingTarget.blocks.blocklyListen(e, this.runtime);
-    }
+        this.editingTarget.blocks.blocklyListen(e, this.runtime);    }
 };
 
 /**
@@ -255,7 +254,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     });
     this.dom.children[0] = this.toolbox;
     if (this.editingTarget.isStage) {
-        var xml = this.dom.children[0].getElementById("xml");
+        var xml = this.dom.getElementById("xml");
         xml.removeChild(xml.childNodes[0]);   
     }
 };
