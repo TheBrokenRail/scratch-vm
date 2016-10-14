@@ -46,7 +46,9 @@ function VirtualMachine () {
     this.blockListener = this.blockListener.bind(this);
     this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
     this.oParser = new DOMParser();
-    this.dom = this.oParser.parseFromString(Blockly.Blocks.defaultToolbox, 'text/xml');
+    this.dom = this.oParser.parseFromString(
+        Blockly.Blocks.defaultToolbox, 'text/xml'
+    );
     this.toolbox = null;
 }
 
@@ -254,7 +256,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     });
     this.dom.children[0] = this.oParser.parseFromString(this.toolbox, 'text/xml');;
     if (this.editingTarget.isStage) {
-        var xml = this.dom.getElementById("xml");
+        var xml = this.dom.getElementById('xml');
         xml.removeChild(xml.childNodes[0]);   
     }
 };
