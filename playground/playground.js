@@ -21,6 +21,7 @@ var loadProject = function () {
             }
         }
     };
+
     r.open('GET', url);
     r.send();
 };
@@ -52,6 +53,7 @@ window.onload = function() {
     // Instantiate scratch-blocks and attach it to the DOM.
     var workspace = window.Blockly.inject('blocks', {
         media: './media/',
+        toolbox: window.vm.dom.children[0],
         zoom: {
             controls: true,
             wheel: true,
