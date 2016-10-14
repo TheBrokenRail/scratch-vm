@@ -203,7 +203,6 @@ VirtualMachine.prototype.blockListener = function (e) {
 VirtualMachine.prototype.flyoutBlockListener = function (e) {
     this.runtime.flyoutBlocks.blocklyListen(e, this.runtime);
 };
-
 /**
  * Set an editing target. An editor UI can use this function to switch
  * between editing different targets, sprites, etc.
@@ -254,7 +253,8 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     this.emit('workspaceUpdate', {
         'xml': this.editingTarget.blocks.toXML()
     });
-    this.dom.children[0] = this.oParser.parseFromString(this.toolbox, 'text/xml');;
+    this.dom.children[0] = 
+        this.oParser.parseFromString(this.toolbox, 'text/xml');
     if (this.editingTarget.isStage) {
         var xml = this.dom.getElementById('xml');
         xml.removeChild(xml.childNodes[0]);   
