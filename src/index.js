@@ -60,7 +60,7 @@ util.inherits(VirtualMachine, EventEmitter);
  */
 VirtualMachine.prototype.start = function () {
     this.runtime.start();
-    this.toolbox = String(this.dom.children[0]);
+    this.toolbox = this.dom.children[0].innerHTML;
 };
 
 /**
@@ -252,7 +252,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     this.emit('workspaceUpdate', {
         'xml': this.editingTarget.blocks.toXML()
     });
-    this.dom.children[0] = this.toolbox;
+    this.dom.children[0] = this.oParser.parseFromString(this.toolbox, 'text/xml');;
     if (this.editingTarget.isStage) {
         var xml = this.dom.getElementById("xml");
         xml.removeChild(xml.childNodes[0]);   
