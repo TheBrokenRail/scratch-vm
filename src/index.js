@@ -1,4 +1,3 @@
-
 var EventEmitter = require('events');
 var util = require('util');
 
@@ -47,7 +46,7 @@ function VirtualMachine () {
     this.blockListener = this.blockListener.bind(this);
     this.flyoutBlockListener = this.flyoutBlockListener.bind(this);
     this.oParser = new DOMParser();
-    this.dom = oParser.parseFromString(Blockly.Blocks.defaultToolbox, 'text/xml');
+    this.dom = this.oParser.parseFromString(Blockly.Blocks.defaultToolbox, 'text/xml');
     this.toolbox = null;
 }
 
@@ -244,11 +243,6 @@ VirtualMachine.prototype.emitTargetsUpdate = function () {
         // Currently editing target id.
         editingTarget: this.editingTarget.id
     });
-    this.dom.children[0] = this.toolbox;
-    if (this.editingTarget.isStage) {
-        var xml = this.dom.children[0].getElementById("xml");
-        xml.removeChild(xml.childNodes[0]);   
-    }
 };
 
 /**
@@ -259,6 +253,11 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     this.emit('workspaceUpdate', {
         'xml': this.editingTarget.blocks.toXML()
     });
+    this.dom.children[0] = this.toolbox;
+    if (this.editingTarget.isStage) {
+        var xml = this.dom.children[0].getElementById("xml");
+        xml.removeChild(xml.childNodes[0]);   
+    }
 };
 
 module.exports = VirtualMachine;
