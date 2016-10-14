@@ -207,8 +207,7 @@ VirtualMachine.prototype.flyoutBlockListener = function (e) {
  * Set an editing target. An editor UI can use this function to switch
  * between editing different targets, sprites, etc.
  * After switching the editing target, the VM may emit updates
- * to the list of targets and any attached workspace blocks
- * (see `emitTargetsUpdate` and `emitWorkspaceUpdate`).
+ * to the list of targets and any attached workspace blocks * (see `emitTargetsUpdate` and `emitWorkspaceUpdate`).
  * @param {string} targetId Id of target to set as editing.
  */
 VirtualMachine.prototype.setEditingTarget = function (targetId) {
@@ -256,7 +255,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     this.dom.children[0] = 
         this.oParser.parseFromString(this.toolbox, 'text/xml');
     if (this.editingTarget.isStage) {
-        var xml = this.dom.getElementById('xml');
+        var xml = this.dom.getElementById('toolbox-categories');
         xml.removeChild(xml.childNodes[0]);
     }
 };
