@@ -252,8 +252,7 @@ VirtualMachine.prototype.emitWorkspaceUpdate = function () {
     this.emit('workspaceUpdate', {
         'xml': this.editingTarget.blocks.toXML()
     });
-    this.dom.children[0] = 
-        this.oParser.parseFromString(this.toolbox, 'text/xml');
+    this.dom.children[0].innerHTML = this.toolbox;
     if (this.editingTarget.isStage) {
         var xml = this.dom.getElementById('toolbox-categories');
         xml.removeChild(xml.childNodes[0]);
