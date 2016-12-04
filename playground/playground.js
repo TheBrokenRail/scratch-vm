@@ -57,6 +57,8 @@ window.onload = function() {
         }
     });
     window.workspace = workspace;
+    var toolbox = document.getElementById("blocks").children[0].children[0].children[0];
+    var toolboxOriginal = new String(toolbox.innerHTML);
 
     // Attach scratch-blocks events to VM.
     workspace.addChangeListener(vm.blockListener);
@@ -109,6 +111,17 @@ window.onload = function() {
         workspace.clear();
         var dom = window.Blockly.Xml.textToDom(data.xml);
         window.Blockly.Xml.domToWorkspace(dom, workspace);
+        if (this.editingTarget.isStage) {
+            var div = document.createElement("DIV");
+            toolbox.innerHTML = "";
+            div.innerHTML = new String(toolboxOriginal);
+            var i = 1;
+            for (; i < div.children.length; i++) {
+                toolbox.appendChild(div.children[i]);
+            }
+        } else {
+            toolbox.innerHTML = new String(toolboxOriginal);
+        }
     });
 
     // Receipt of new list of targets, selected target update.
