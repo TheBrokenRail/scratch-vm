@@ -39,7 +39,6 @@ window.onload = function() {
     // Instantiate scratch-blocks and attach it to the DOM.
     var workspace = window.Blockly.inject('blocks', {
         media: './media/',
-        horizontalLayout: horizontal,
         zoom: {
             controls: true,
             wheel: true,
