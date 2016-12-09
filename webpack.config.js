@@ -73,18 +73,8 @@ module.exports = [
                 // Renderer
                 'scratch-render'
             ],
-            vertical: [
-                'scratch-blocks/blockly_compressed_vertical.js',
-                'scratch-blocks/msg/messages.js',
-                'scratch-blocks/blocks_compressed.js',
-                'scratch-blocks/blocks_compressed_vertical.js'
-            ],
-            horizontal: [
-                'scratch-blocks/blockly_compressed_horizontal.js',
-                'scratch-blocks/msg/messages.js',
-                'scratch-blocks/blocks_compressed.js',
-                'scratch-blocks/blocks_compressed_horizontal.js'
-            ]
+            vertical: 'scratch-blocks/vertical.js',
+            horizontal: 'scratch-blocks/shim/horizontal.js'
         },
         output: {
             path: path.resolve(__dirname, 'playground'),
