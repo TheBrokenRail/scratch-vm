@@ -1,4 +1,5 @@
 const Cast = require('../util/cast');
+const questionBox = require('./questionbox');
 
 class Scratch3SensingBlocks {
     constructor (runtime) {
@@ -12,13 +13,13 @@ class Scratch3SensingBlocks {
          * The "answer" block value.
          * @type {string}
          */
-        this._answer = '';
+        // this._answer = '';
 
         /**
          * The list of queued questions and respective `resolve` callbacks.
          * @type {!Array}
          */
-        this._questionList = [];
+        // this._questionList = [];
 
         this.runtime.on('ANSWER', this._onAnswer.bind(this));
         this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
@@ -60,8 +61,8 @@ class Scratch3SensingBlocks {
     }
 
     _onAnswer (answer) {
-        this._answer = answer;
-        const questionObj = this._questionList.shift();
+        questionBox._answer = answer;
+        const questionObj = questionBox._questionList.shift();
         if (questionObj) {
             const [_question, resolve, target, wasVisible] = questionObj;
             // If the target was visible when asked, hide the say bubble.
@@ -69,15 +70,15 @@ class Scratch3SensingBlocks {
                 this.runtime.emit('SAY', target, 'say', '');
             }
             resolve();
-            this._askNextQuestion();
+            questionBox._askNextQuestion();
         }
     }
 
-    _enqueueAsk (question, resolve, target, wasVisible) {
-        this._questionList.push([question, resolve, target, wasVisible]);
-    }
+    // _enqueueAsk (question, resolve, target, wasVisible) {
+    //     this._questionList.push([question, resolve, target, wasVisible]);
+    // }
 
-    _askNextQuestion () {
+    // _askNextQuestion () {
         if (this._questionList.length > 0) {
             const [question, _resolve, target, wasVisible] = this._questionList[0];
             // If the target is visible, emit a blank question and use the
@@ -91,7 +92,7 @@ class Scratch3SensingBlocks {
         }
     }
 
-    _clearAllQuestions () {
+    // _clearAllQuestions () {
         this._questionList = [];
         this.runtime.emit('QUESTION', null);
     }
@@ -99,16 +100,16 @@ class Scratch3SensingBlocks {
     askAndWait (args, util) {
         const _target = util.target;
         return new Promise(resolve => {
-            const isQuestionAsked = this._questionList.length > 0;
-            this._enqueueAsk(args.QUESTION, resolve, _target, _target.visible);
+            const isQuestionAsked = questionBox._questionList.length > 0;
+            questionBox._enqueueAsk(args.QUESTION, resolve, _target, _target.visible);
             if (!isQuestionAsked) {
-                this._askNextQuestion();
+                questionBox._askNextQuestion();
             }
         });
     }
 
     getAnswer () {
-        return this._answer;
+        return questionBox._answer;
     }
 
     touchingObject (args, util) {
