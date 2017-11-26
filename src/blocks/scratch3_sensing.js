@@ -9,20 +9,9 @@ class Scratch3SensingBlocks {
          */
         this.runtime = runtime;
 
-        /**
-         * The "answer" block value.
-         * @type {string}
-         */
-        // this._answer = '';
-
-        /**
-         * The list of queued questions and respective `resolve` callbacks.
-         * @type {!Array}
-         */
-        // this._questionList = [];
-
         this.runtime.on('ANSWER', this._onAnswer.bind(this));
         this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
+        questionBox.runtime = runtime;
     }
 
     /**
@@ -72,29 +61,6 @@ class Scratch3SensingBlocks {
             resolve();
             questionBox._askNextQuestion();
         }
-    }
-
-    // _enqueueAsk (question, resolve, target, wasVisible) {
-    //     this._questionList.push([question, resolve, target, wasVisible]);
-    // }
-
-    // _askNextQuestion () {
-        if (this._questionList.length > 0) {
-            const [question, _resolve, target, wasVisible] = this._questionList[0];
-            // If the target is visible, emit a blank question and use the
-            // say event to trigger a bubble.
-            if (wasVisible) {
-                this.runtime.emit('SAY', target, 'say', question);
-                this.runtime.emit('QUESTION', '');
-            } else {
-                this.runtime.emit('QUESTION', question);
-            }
-        }
-    }
-
-    // _clearAllQuestions () {
-        this._questionList = [];
-        this.runtime.emit('QUESTION', null);
     }
 
     askAndWait (args, util) {
