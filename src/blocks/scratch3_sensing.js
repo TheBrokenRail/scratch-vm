@@ -10,7 +10,7 @@ class Scratch3SensingBlocks {
         this.runtime = runtime;
 
         this.runtime.on('ANSWER', this._onAnswer.bind(this));
-        this.runtime.on('PROJECT_STOP_ALL', this._clearAllQuestions.bind(this));
+        this.runtime.on('PROJECT_STOP_ALL', questionBox._clearAllQuestions.bind(questionBox));
         questionBox.runtime = runtime;
     }
 
