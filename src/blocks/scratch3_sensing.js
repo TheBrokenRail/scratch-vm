@@ -82,9 +82,10 @@ class Scratch3SensingBlocks {
             const [question, _resolve, target, wasVisible] = this._questionList[0];
             // If the target is visible, emit a blank question and use the
             // say event to trigger a bubble.
+            question.wasVisible = wasVisible;
             if (wasVisible) {
                 this.runtime.emit('SAY', target, 'say', question.text);
-                this.runtime.emit('QUESTION', '');
+                this.runtime.emit('QUESTION', question);
             } else {
                 this.runtime.emit('QUESTION', question);
             }
@@ -100,7 +101,7 @@ class Scratch3SensingBlocks {
         const _target = util.target;
         return new Promise(resolve => {
             const isQuestionAsked = this._questionList.length > 0;
-            this._enqueueAsk({text: args.QUESTION, say: say}, resolve, _target, _target.visible);
+            this._enqueueAsk({text: args.QUESTION, say: say, wasVisible: null}, resolve, _target, _target.visible);
             if (!isQuestionAsked) {
                 this._askNextQuestion();
             }
