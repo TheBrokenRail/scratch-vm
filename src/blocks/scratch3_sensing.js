@@ -83,7 +83,7 @@ class Scratch3SensingBlocks {
             // If the target is visible, emit a blank question and use the
             // say event to trigger a bubble.
             if (wasVisible) {
-                this.runtime.emit('SAY', target, 'say', question);
+                this.runtime.emit('SAY', target, 'say', question.text);
                 this.runtime.emit('QUESTION', '');
             } else {
                 this.runtime.emit('QUESTION', question);
