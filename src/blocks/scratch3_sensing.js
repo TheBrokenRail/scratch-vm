@@ -96,11 +96,11 @@ class Scratch3SensingBlocks {
         this.runtime.emit('QUESTION', null);
     }
 
-    askAndWait (args, util) {
+    askAndWait (args, util, say) {
         const _target = util.target;
         return new Promise(resolve => {
             const isQuestionAsked = this._questionList.length > 0;
-            this._enqueueAsk(args.QUESTION, resolve, _target, _target.visible);
+            this._enqueueAsk({text: args.QUESTION, say: say}, resolve, _target, _target.visible);
             if (!isQuestionAsked) {
                 this._askNextQuestion();
             }
